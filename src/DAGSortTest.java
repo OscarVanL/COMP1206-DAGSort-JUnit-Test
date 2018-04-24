@@ -1,4 +1,5 @@
 import org.junit.Test;
+import org.omg.CORBA.DynAnyPackage.Invalid;
 
 import java.util.Arrays;
 
@@ -9,19 +10,13 @@ public class DAGSortTest {
     /**
      * Passes null instead of a 2D array representing a DAG. The Sort should throw a NullPointerException.
      */
-    @Test
-    public void testNullDetection() {
-        boolean exceptionThrown = false;
-
+    @Test(expected = NullPointerException.class)
+    public void testNullDetection() throws NullPointerException {
         try {
             DAGSort.sortDAG(null);
         } catch (CycleDetectedException | InvalidNodeException e) {
             fail("Unexpected other exception thrown");
-        } catch (NullPointerException e) {
-            exceptionThrown = true;
         }
-
-        assertTrue("Should have thrown NullPointerException", exceptionThrown);
     }
 
     /**
@@ -41,6 +36,25 @@ public class DAGSortTest {
         }
 
         assertEquals("Does not return an empty array for an empty graph", Arrays.toString(new int[][]{}), Arrays.toString(output));
+    }
+
+    /**
+     * Tests the DAGSort with a singleton. For any valid topological sort this will result in the same expected output.
+     */
+    @Test
+    public void testSingleton() {
+        int[][] edges = { {} };
+        int[] output = {};
+
+        try {
+            output = DAGSort.sortDAG(edges);
+        }  catch (CycleDetectedException | InvalidNodeException e) {
+            fail("Unexpected other exception thrown");
+        } catch (NullPointerException e) {
+            fail("Incorrectly threw NullPointerException for graph with single node");
+        }
+
+        assertEquals("Does not return correct result from graph with single node", Arrays.toString(new int[]{0}), Arrays.toString(output));
     }
 
     /**
@@ -95,7 +109,6 @@ public class DAGSortTest {
                             nodeV = v;
                         }
                     }
-
                     //We've found two valid u and v nodes, now to check if they actually break the rules
                     if (nodeU != null && nodeV != null) {
                         if (nodeU > nodeV) {
@@ -114,20 +127,15 @@ public class DAGSortTest {
      * Tests for instances where we refer to a node that does not exist (we have put node 0 having a path to node 1, but node 1 is not defined.
      * It should throw a InvalidNodeException if working as intended.
      */
-    @Test
-    public void testReferralToInvalidNode() {
+    @Test(expected = InvalidNodeException.class)
+    public void testReferralToInvalidNode() throws InvalidNodeException {
         int[][] invalidNodeEdge = { {1} };
-        boolean exceptionThrown = false;
 
         try {
             DAGSort.sortDAG(invalidNodeEdge);
         } catch (CycleDetectedException e) {
             fail("Unexpected other exception thrown");
-        } catch (InvalidNodeException e) {
-            exceptionThrown = true;
         }
-
-        assertTrue("Should have thrown InvalidNodeException", exceptionThrown);
     }
 
     /*
@@ -153,21 +161,16 @@ public class DAGSortTest {
     /**
      * Passes a graph containing cycles to the DAGSort, it should throw a CycleDetectedException if working as intended.
      */
-    @Test
-    public void testCycles() {
+    @Test(expected = CycleDetectedException.class)
+    public void testCycles() throws CycleDetectedException {
         //A graph containing a cycle
         int[][] edgesWithCycle = { {1}, {2}, {3, 4}, {1}, {} };
-        boolean exceptionThrown = false;
 
         try {
             DAGSort.sortDAG(edgesWithCycle);
         } catch (InvalidNodeException e) {
             fail("Unexpected other exception thrown");
-        } catch (CycleDetectedException e) {
-            exceptionThrown = true;
         }
-
-        assertTrue("Does not throw CycleDetectedException when graph with cycles is used", exceptionThrown);
     }
 
     //Passes a graph containing a loop to the DAGSort, this is where a node maps to itself. It should throw a CycleDetectedException.
@@ -175,39 +178,29 @@ public class DAGSortTest {
     /**
      * Passes a graph containing a loop (a vertex with a path to itself) to the DAGSort, it should throw a CycleDetectedException if working as intended.
      */
-    @Test
-    public void testLoopCycles() {
+    @Test(expected = CycleDetectedException.class)
+    public void testLoopCycles() throws CycleDetectedException{
         //A graph containing a cycle
         int[][] edgesWithLoop = { {3}, {3}, {}, {2, 3, 5}, {3}, {}};
-        boolean exceptionThrown = false;
 
         try {
             DAGSort.sortDAG(edgesWithLoop);
         } catch (InvalidNodeException e) {
             fail("Unexpected other exception thrown");
-        } catch (CycleDetectedException e) {
-            exceptionThrown = true;
         }
-
-        assertTrue("Does not throw CycleDetectedException when graph with loop is used", exceptionThrown);
     }
 
     //Tests a graph containing a negative node, it should throw an InvalidNodeException exception if functioning properly.
-    @Test
-    public void testNegativeNodes() {
+    @Test(expected = InvalidNodeException.class)
+    public void testNegativeNodes() throws InvalidNodeException {
         //A graph mapping to a negative node
         int[][] edgesWithLoop = { {3}, {3}, {}, {2, 5}, {3}, {-1}};
-        boolean exceptionThrown = false;
 
         try {
             DAGSort.sortDAG(edgesWithLoop);
-        } catch (InvalidNodeException e) {
-            exceptionThrown = true;
         } catch (CycleDetectedException e) {
             fail("Unexpected other exception thrown");
         }
-
-        assertTrue("Does not throw InvalidNodeException when a negative node is used", exceptionThrown);
     }
 
 }
