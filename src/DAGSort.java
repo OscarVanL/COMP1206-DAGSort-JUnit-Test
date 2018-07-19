@@ -2,6 +2,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/*
+ * @author University of Southampton
+ */
 public class DAGSort {
 
     /**
