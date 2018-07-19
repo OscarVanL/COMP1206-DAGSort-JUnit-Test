@@ -5,6 +5,9 @@ import java.util.Arrays;
 
 import static org.junit.Assert.*;
 
+/*
+ * @author Oscar VanL
+ */
 public class DAGSortTest {
 
     /**
